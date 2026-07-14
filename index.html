@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>有口福小炒 Order System</title>
+    <meta
+      name="description"
+      content="有口福小炒柜台点餐系统，用于堂食、打包订单处理。"
+    />
+    <meta name="theme-color" content="#a83224" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="有口福小炒 Order System">
+        <img class="brand-logo" src="assets/images/ykf-logo.jpeg" alt="有口福小炒" />
+        <span>
+          <strong>有口福小炒</strong>
+          <small>Order System</small>
+        </span>
+      </a>
+
+      <div class="topbar-center" aria-label="Today summary">
+        <span id="todayDate">Today</span>
+        <strong id="liveClock">00:00</strong>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="lang-button" id="langToggleBtn" type="button" title="切换语言" aria-label="切换语言">BM</button>
+        <button class="settlement-button" id="settlementBtn" type="button" data-i18n="settlement">结算</button>
+        <button class="icon-button" id="newOrderBtn" type="button" title="新订单" aria-label="新订单">+</button>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <section class="summary-strip" aria-label="今日概览">
+        <article class="summary-tile">
+          <span data-i18n="metricOrdersLabel">今日订单</span>
+          <strong id="metricOrders">0</strong>
+        </article>
+        <article class="summary-tile">
+          <span data-i18n="metricOpenLabel">待处理</span>
+          <strong id="metricOpen">0</strong>
+        </article>
+        <article class="summary-tile">
+          <span data-i18n="metricDoneLabel">已完成</span>
+          <strong id="metricDone">0</strong>
+        </article>
+        <article class="summary-tile revenue">
+          <span data-i18n="metricRevenueLabel">营业额</span>
+          <strong id="metricRevenue">RM0.00</strong>
+        </article>
+      </section>
+
+      <section class="order-workspace" aria-label="点餐工作区">
+        <div class="menu-pane">
+          <div class="pane-heading">
+            <div>
+              <p class="section-kicker">Premier Food Republic 9th Mile</p>
+              <h1 data-i18n="orderStation">点餐台</h1>
+            </div>
+            <div class="search-wrap">
+              <span aria-hidden="true">⌕</span>
+              <input id="menuSearch" type="search" placeholder="搜索菜名 / BM / 价格" autocomplete="off" data-i18n-placeholder="searchPlaceholder" />
+            </div>
+          </div>
+
+          <div class="order-mode" role="radiogroup" aria-label="订单类型">
+            <button class="mode-btn active" type="button" data-order-type="dine-in" aria-pressed="true" data-i18n="orderTypeDineIn">堂食</button>
+            <button class="mode-btn" type="button" data-order-type="takeaway" aria-pressed="false" data-i18n="orderTypeTakeaway">打包</button>
+          </div>
+
+          <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="菜单分类"></div>
+          <div class="menu-grid" id="menuGrid" aria-live="polite"></div>
+        </div>
+
+        <aside class="ticket-panel" aria-label="当前订单">
+          <div class="ticket-header">
+            <div>
+              <p class="section-kicker" data-i18n="currentOrder">Current Order</p>
+              <h2 id="ticketNumber">#YKF-001</h2>
+            </div>
+            <span class="ticket-type" id="ticketType">堂食</span>
+          </div>
+
+          <div class="customer-grid">
+            <label>
+              <span data-i18n="customerLabel">桌号 / 名字</span>
+              <input id="customerName" type="text" placeholder="A3 / Lim" />
+            </label>
+            <label>
+              <span data-i18n="guestLabel">人数</span>
+              <input id="guestCount" type="number" min="1" value="2" />
+            </label>
+          </div>
+
+          <label class="full-field">
+            <span data-i18n="noteLabel">备注</span>
+            <textarea id="orderNote" rows="2" placeholder="少辣、不要葱、几点拿..." data-i18n-placeholder="notePlaceholder"></textarea>
+          </label>
+
+          <div class="cart-list" id="cartList"></div>
+
+          <div class="ticket-summary">
+            <div>
+              <span data-i18n="subtotalLabel">小计</span>
+              <strong id="subtotalText">RM0.00</strong>
+            </div>
+            <div hidden>
+              <span id="serviceLabel"></span>
+              <strong id="serviceText">RM0.00</strong>
+            </div>
+            <div class="total-row">
+              <span>总额</span>
+              <strong id="totalText">RM0.00</strong>
+            </div>
+          </div>
+
+          <div class="payment-row" role="radiogroup" aria-label="付款方式">
+            <button class="pay-btn active" type="button" data-payment="cash" aria-pressed="true" data-i18n="paymentCash">现金</button>
+            <button class="pay-btn" type="button" data-payment="ewallet" aria-pressed="false">E-Wallet</button>
+          </div>
+
+          <div class="cash-panel" id="cashPanel">
+            <label class="cash-field">
+              <span data-i18n="cashReceivedLabel">顾客给</span>
+              <input id="cashReceivedInput" type="number" min="0" step="0.1" placeholder="0.00" />
+            </label>
+            <div class="cash-change-row">
+              <span data-i18n="changeDueLabel">找回</span>
+              <strong id="changeDueText">RM0.00</strong>
+            </div>
+          </div>
+
+          <div class="ewallet-qr-panel" id="ewalletQrPanel" hidden>
+            <div class="ewallet-qr-copy">
+              <strong data-i18n="ewalletQrTitle">E-Wallet QR</strong>
+              <span id="ewalletQrAmount">RM0.00</span>
+            </div>
+            <div class="ewallet-qr-frame">
+              <img id="ewalletQrImage" alt="E-Wallet QR" hidden />
+              <div class="ewallet-qr-empty" id="ewalletQrEmpty">
+                <strong data-i18n="ewalletQrEmpty">还没有 QR Code</strong>
+              </div>
+            </div>
+            <label class="qr-upload-btn">
+              <span data-i18n="uploadQr">上传 QR</span>
+              <input id="qrUploadInput" type="file" accept="image/*" />
+            </label>
+            <button class="confirm-paid-btn" id="confirmPaidBtn" type="button" data-i18n="confirmPaid">已收到付款</button>
+            <p class="payment-status" id="paymentStatus" data-i18n="paymentPending">等待顾客付款</p>
+          </div>
+
+          <button class="submit-order" id="submitOrderBtn" type="button" data-i18n="submitOrder">送出订单</button>
+        </aside>
+      </section>
+
+    </main>
+
+    <div class="settlement-modal" id="settlementModal" hidden>
+      <div class="settlement-dialog" role="dialog" aria-modal="true" aria-labelledby="settlementTitle">
+        <div class="settlement-heading">
+          <div>
+            <p class="section-kicker" id="settlementDate">Today</p>
+            <h2 id="settlementTitle" data-i18n="settlementTitle">今日结算</h2>
+          </div>
+          <button class="icon-button" id="closeSettlementBtn" type="button" aria-label="关闭">×</button>
+        </div>
+
+        <div class="settlement-grid">
+          <article>
+            <span data-i18n="settlementOrders">订单</span>
+            <strong id="settlementOrders">0</strong>
+          </article>
+          <article>
+            <span data-i18n="paymentCash">现金</span>
+            <strong id="settlementCash">RM0.00</strong>
+          </article>
+          <article>
+            <span>E-Wallet</span>
+            <strong id="settlementEwallet">RM0.00</strong>
+          </article>
+          <article class="settlement-total">
+            <span data-i18n="settlementTotal">总额</span>
+            <strong id="settlementTotal">RM0.00</strong>
+          </article>
+        </div>
+
+        <div class="settlement-section">
+          <h3 data-i18n="settlementItems">菜品明细</h3>
+          <div class="settlement-list" id="settlementItemList"></div>
+        </div>
+
+        <div class="settlement-section settlement-orders-section">
+          <h3 data-i18n="settlementOrderList">今日订单</h3>
+          <div class="settlement-list" id="settlementOrderList"></div>
+        </div>
+
+        <div class="settlement-section settlement-history-section">
+          <h3 data-i18n="settlementHistory">历史记录</h3>
+          <div class="settlement-list" id="settlementHistoryList"></div>
+        </div>
+
+        <div class="settlement-actions">
+          <button class="finish-settlement-btn" type="button" id="finishSettlementBtn" data-i18n="finishSettlement">完成结算清0</button>
+          <button type="button" id="printSettlementBtn" data-i18n="printSettlement">打印结算</button>
+          <button type="button" id="closeSettlementFooterBtn" data-i18n="close">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <template id="emptyCartTemplate">
+      <div class="empty-state">
+        <strong data-i18n="emptyCartTitle">还没有餐点</strong>
+        <span data-i18n="emptyCartHelp">从左边菜单加入菜色</span>
+      </div>
+    </template>
+
+    <script src="script.js" defer></script>
+  </body>
+</html>
